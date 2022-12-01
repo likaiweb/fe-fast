@@ -1,0 +1,65 @@
+{
+  "name": "fe-fast",
+  "displayName": "fe-fast",
+  "description": "H5快捷开发工具",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.64.2"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "比心",
+    "鱼儿直播",
+    "H5",
+    "快捷开发"
+  ],
+  "icon": "resources/logo.png",
+  "publisher": "coderRick",
+  "activationEvents": [
+    "onCommand:fe-fast.openWatt"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "fe-fast.openWatt",
+        "title": "watt发布"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js",
+    "release": "npm version patch --no-git-tag-version && vsce publish"
+  },
+  "devDependencies": {
+    "@types/glob": "^8.0.0",
+    "@types/mocha": "^10.0.0",
+    "@types/node": "16.x",
+    "@types/vscode": "^1.73.0",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "@vscode/test-electron": "^2.1.5",
+    "connect": "^3.7.0",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "get-port": "^6.1.2",
+    "glob": "^8.0.3",
+    "http-proxy-middleware": "^2.0.6",
+    "mocha": "^10.0.0",
+    "path": "^0.12.7",
+    "prettier": "^2.8.0",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "better-opn": "^3.0.2",
+    "fs-extra": "^11.1.0"
+  }
+}
