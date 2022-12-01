@@ -1,10 +1,10 @@
 {
   "name": "fe-fast",
   "displayName": "fe-fast",
-  "description": "H5快捷开发工具",
-  "version": "0.0.1",
+  "description": "比心直播H5快捷开发工具",
+  "version": "0.0.2",
   "engines": {
-    "vscode": "^1.64.2"
+    "vscode": "^1.73.0"
   },
   "categories": [
     "Other"
@@ -18,17 +18,10 @@
   "icon": "resources/logo.png",
   "publisher": "coderRick",
   "activationEvents": [
-    "onCommand:fe-fast.openWatt"
+    "*"
   ],
   "main": "./out/extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "fe-fast.openWatt",
-        "title": "watt发布"
-      }
-    ]
-  },
+  "contributes": {},
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -60,6 +53,7 @@
   },
   "dependencies": {
     "better-opn": "^3.0.2",
+    "execa": "^5.1.1",
     "fs-extra": "^11.1.0"
   }
 }
