@@ -41,22 +41,11 @@ export default class WattStatusBar {
   init() {
     this._content.subscriptions.push(
       vscode.commands.registerCommand(this._wattCommandId, async () => {
-        const workspaceFolders: any = vscode.workspace.workspaceFolders
-        this._rootPath = workspaceFolders[0].uri.fsPath
-        const pkgPath = this._rootPath + '/package.json'
-        if (!fs.pathExistsSync(pkgPath)) {
-          return vscode.window.showErrorMessage('请打开项目文件夹')
-        }
-        const pkg = fs.readJsonSync(pkgPath)
-        const projectName = pkg.name
-        const buPrefix = pkg.isaac?.buPrefix
-        if (!projectName || !buPrefix) {
-          return vscode.window.showErrorMessage('这不是watt项目')
-        }
-        const buId = buIdEnum[buPrefix as number]
-
+        const pkg = fs.readJsonSync(this._rootPath + '/package.json')
+        const { name, isaac } = pkg
+        const buPrefix = isaac?.buPrefix
         const env = await this.getEnv()
-        const uri = this.getWattUrl(buId, projectName, env)
+        const uri = this.getWattUrl(buIdEnum[buPrefix as number], name, env)
         betterOpn(uri)
       })
     )
@@ -66,7 +55,23 @@ export default class WattStatusBar {
     this.wattStatusBarItem.command = this._wattCommandId
     this._content.subscriptions.push(this.wattStatusBarItem)
 
-    this.wattStatusBarItem.show()
+    this.showStatusBar()
+    this._content.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(this.showStatusBar))
+  }
+
+  private async showStatusBar() {
+    const workspaceFolders: any = vscode.workspace.workspaceFolders
+    this._rootPath = workspaceFolders[0].uri.fsPath
+    const pkgPath = this._rootPath + '/package.json'
+    if (!fs.pathExistsSync(pkgPath)) {
+      return this.wattStatusBarItem?.hide()
+    }
+    const pkg = fs.readJsonSync(pkgPath)
+    const { name, isaac } = pkg
+    if (!name || !isaac?.buPrefix) {
+      return this.wattStatusBarItem?.hide()
+    }
+    this.wattStatusBarItem?.show()
   }
   dispose() {
     this.wattStatusBarItem?.dispose()

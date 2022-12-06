@@ -1,9 +1,5 @@
 # Change Log
 
-All notable changes to the "fe-fast" extension will be documented in this file.
-
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
-
-## [Unreleased]
-
-- Initial release
+| Version | Date       | Changelog                                                                                                     |
+| ------- | ---------- | ------------------------------------------------------------------------------------------------------------- |
+| 0.0.4   | 2022-12-06 | **【新增】** 识别项目，打开 gitLab 远程地址 <br/> **【修改】** ”watt 发布“按钮在非 watt 项目打开时,会自动隐藏 |
