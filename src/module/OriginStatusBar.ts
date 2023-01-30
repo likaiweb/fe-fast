@@ -54,7 +54,7 @@ export default class OriginStatusBar {
       })
     )
 
-    this.originStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 101)
+    this.originStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98)
     this.originStatusBarItem.text = '项目gitLab'
     this.originStatusBarItem.command = this._originCommandId
     this._content.subscriptions.push(this.originStatusBarItem)
@@ -64,7 +64,7 @@ export default class OriginStatusBar {
 
   private async showStatusBar() {
     const workspaceFolders: any = vscode.workspace.workspaceFolders
-    this._rootPath = workspaceFolders[0].uri.fsPath
+    this._rootPath = workspaceFolders[0]?.uri?.fsPath
     if (!fs.existsSync(this._rootPath + '/.git/config')) {
       return this.originStatusBarItem?.hide()
     }

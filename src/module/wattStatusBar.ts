@@ -50,7 +50,7 @@ export default class WattStatusBar {
       })
     )
 
-    this.wattStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 100)
+    this.wattStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 99)
     this.wattStatusBarItem.text = 'watt发布'
     this.wattStatusBarItem.command = this._wattCommandId
     this._content.subscriptions.push(this.wattStatusBarItem)
@@ -61,7 +61,7 @@ export default class WattStatusBar {
 
   private async showStatusBar() {
     const workspaceFolders: any = vscode.workspace.workspaceFolders
-    this._rootPath = workspaceFolders[0].uri.fsPath
+    this._rootPath = workspaceFolders[0]?.uri?.fsPath
     const pkgPath = this._rootPath + '/package.json'
     if (!fs.pathExistsSync(pkgPath)) {
       return this.wattStatusBarItem?.hide()
