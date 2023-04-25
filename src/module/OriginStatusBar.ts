@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 const fs = require('fs-extra')
+import { getRootPath } from '../lib/utils'
 const betterOpn = require('better-opn')
 
 export default class OriginStatusBar {
@@ -14,7 +15,7 @@ export default class OriginStatusBar {
     this._originCommandId = 'fe-fast.openGitOrigin'
     this.originStatusBarItem = undefined
     this._originHost = 'https://git.yupaopao.com'
-    this._rootPath = ''
+    this._rootPath = getRootPath()
     this.init()
   }
 
@@ -63,8 +64,6 @@ export default class OriginStatusBar {
   }
 
   private async showStatusBar() {
-    const workspaceFolders: any = vscode.workspace.workspaceFolders
-    this._rootPath = workspaceFolders[0]?.uri?.fsPath
     if (!fs.existsSync(this._rootPath + '/.git/config')) {
       return this.originStatusBarItem?.hide()
     }

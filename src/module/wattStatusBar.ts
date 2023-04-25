@@ -1,5 +1,6 @@
 import * as vscode from 'vscode'
 import { buIdEnum } from '../lib/config'
+import { getRootPath } from '../lib/utils'
 const fs = require('fs-extra')
 const betterOpn = require('better-opn')
 
@@ -15,7 +16,7 @@ export default class WattStatusBar {
     this._wattCommandId = 'fe-fast.openWatt'
     this._wattUrl = `https://watt-fe.yupaopao.com/#/deploy/application-release`
     this.wattStatusBarItem = undefined
-    this._rootPath = ''
+    this._rootPath = getRootPath()
     this.init()
   }
 
@@ -60,8 +61,6 @@ export default class WattStatusBar {
   }
 
   private async showStatusBar() {
-    const workspaceFolders: any = vscode.workspace.workspaceFolders
-    this._rootPath = workspaceFolders[0]?.uri?.fsPath
     const pkgPath = this._rootPath + '/package.json'
     if (!fs.pathExistsSync(pkgPath)) {
       return this.wattStatusBarItem?.hide()
