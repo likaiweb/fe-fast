@@ -2,7 +2,7 @@
   "name": "fe-fast",
   "displayName": "fe-fast",
   "description": "比心直播H5快捷开发工具",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "engines": {
     "vscode": "^1.73.0"
   },
