@@ -58,6 +58,7 @@ export const buIdEnum: any = {
   hippo: 63,
   rhino: 64,
   'rhino-new': 65,
+  'fe-ohm': 66,
   yepbbs: 20,
   'op-media': 47,
 }
