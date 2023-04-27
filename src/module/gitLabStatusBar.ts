@@ -3,18 +3,18 @@ const fs = require('fs-extra')
 import { getRootPath } from '../lib/utils'
 const betterOpn = require('better-opn')
 
-export default class OriginStatusBar {
+export default class GitLabStatusBar {
   private _content: vscode.ExtensionContext
-  private _originCommandId: string
-  public originStatusBarItem: vscode.StatusBarItem | undefined
-  private _originHost: string
+  private _gitLabCommandId: string
+  public gitLabStatusBarItem: vscode.StatusBarItem | undefined
+  private _gitLabHost: string
   private _rootPath: string
 
   constructor(context: vscode.ExtensionContext) {
     this._content = context
-    this._originCommandId = 'fe-fast.openGitOrigin'
-    this.originStatusBarItem = undefined
-    this._originHost = 'https://git.yupaopao.com'
+    this._gitLabCommandId = 'fe-fast.openGitLab'
+    this.gitLabStatusBarItem = undefined
+    this._gitLabHost = 'https://git.yupaopao.com'
     this._rootPath = getRootPath()
     this.init()
   }
@@ -48,33 +48,33 @@ export default class OriginStatusBar {
 
   init() {
     this._content.subscriptions.push(
-      vscode.commands.registerCommand(this._originCommandId, async () => {
+      vscode.commands.registerCommand(this._gitLabCommandId, async () => {
         const projectPath = await this.getOriginPath()
         // const branch = await this.getOriginBranch()
-        betterOpn(`${this._originHost}/${projectPath}`)
+        betterOpn(`${this._gitLabHost}/${projectPath}`)
       })
     )
 
-    this.originStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98)
-    this.originStatusBarItem.text = '项目gitLab'
-    this.originStatusBarItem.command = this._originCommandId
-    this._content.subscriptions.push(this.originStatusBarItem)
+    this.gitLabStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98)
+    this.gitLabStatusBarItem.text = '项目gitLab'
+    this.gitLabStatusBarItem.command = this._gitLabCommandId
+    this._content.subscriptions.push(this.gitLabStatusBarItem)
     this.showStatusBar()
     this._content.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(this.showStatusBar))
   }
 
   private async showStatusBar() {
     if (!fs.existsSync(this._rootPath + '/.git/config')) {
-      return this.originStatusBarItem?.hide()
+      return this.gitLabStatusBarItem?.hide()
     }
     const projectPath = await this.getOriginPath()
     if (!projectPath) {
-      return this.originStatusBarItem?.hide()
+      return this.gitLabStatusBarItem?.hide()
     }
-    this.originStatusBarItem?.show()
+    this.gitLabStatusBarItem?.show()
   }
 
   dispose() {
-    this.originStatusBarItem?.dispose()
+    this.gitLabStatusBarItem?.dispose()
   }
 }
