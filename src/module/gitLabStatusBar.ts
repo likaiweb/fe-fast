@@ -1,20 +1,19 @@
 import * as vscode from 'vscode'
 const fs = require('fs-extra')
 import { getRootPath } from '../lib/utils'
+import { GIT_LAB_URL } from '../lib/config'
 const betterOpn = require('better-opn')
 
 export default class GitLabStatusBar {
   private _content: vscode.ExtensionContext
   private _gitLabCommandId: string
-  public gitLabStatusBarItem: vscode.StatusBarItem | undefined
-  private _gitLabHost: string
+  public gitLabStatusBarItem: vscode.StatusBarItem
   private _rootPath: string
 
   constructor(context: vscode.ExtensionContext) {
     this._content = context
     this._gitLabCommandId = 'fe-fast.openGitLab'
-    this.gitLabStatusBarItem = undefined
-    this._gitLabHost = 'https://git.yupaopao.com'
+    this.gitLabStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98)
     this._rootPath = getRootPath()
     this.init()
   }
@@ -50,17 +49,14 @@ export default class GitLabStatusBar {
     this._content.subscriptions.push(
       vscode.commands.registerCommand(this._gitLabCommandId, async () => {
         const projectPath = await this.getOriginPath()
-        // const branch = await this.getOriginBranch()
-        betterOpn(`${this._gitLabHost}/${projectPath}`)
+        betterOpn(`${GIT_LAB_URL}/${projectPath}`)
       })
     )
-
-    this.gitLabStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 98)
     this.gitLabStatusBarItem.text = '项目gitLab'
     this.gitLabStatusBarItem.command = this._gitLabCommandId
     this._content.subscriptions.push(this.gitLabStatusBarItem)
     this.showStatusBar()
-    this._content.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(this.showStatusBar))
+    this._content.subscriptions.push(vscode.window.onDidChangeTextEditorSelection(this.showStatusBar.bind(this)))
   }
 
   private async showStatusBar() {

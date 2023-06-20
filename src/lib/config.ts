@@ -69,3 +69,6 @@ export const buIdEnum: any = {
   poseidon: 35,
   'op-media': 47,
 }
+
+export const GIT_LAB_URL = 'https://git.yupaopao.com'
+export const GW_URL = 'https://gw.yupaopao.com/#/project/link'

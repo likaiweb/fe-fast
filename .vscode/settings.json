@@ -10,5 +10,5 @@
   "typescript.tsc.autoDetect": "off",
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "cSpell.words": ["Bixin", "Bnpm", "execa", "yupaopao"]
+  "cSpell.words": ["autorefresh", "Bixin", "Bnpm", "execa", "yupaopao"]
 }
