@@ -45,18 +45,26 @@ export default class MergeBar {
           // 开始合并：显示分支列表
           const branch: BranchSummary = await this._simpleGit.branch()
           const branchList = branch.all
-          const items = branchList.filter(v => !v.includes('remotes') && v !== branch.current).map(v => ({ label: v }))
+          const items = branchList
+            .filter(v => ['test', 'uat', 'master'].includes(v) && v !== branch.current)
+            .map(v => ({ label: v }))
           vscode.window.showQuickPick(items).then(this.onSelectChange.bind(this))
         } else if (this._mergeStatus === EMergeStatus.CONTINUE) {
           // 继续合并
           try {
+            this.mergeBarItem.text = `$(sync~spin)正在合并`
+            this._mergeStatus = EMergeStatus.RUNNING
             await run('git rebase --continue', this._rootPath)
             this.startMergeRequest()
           } catch (error) {
+            this.mergeBarItem.text = `继续合并`
+            this._mergeStatus = EMergeStatus.CONTINUE
             vscode.window.showWarningMessage('请解决冲突，并作为新的commit提交代码！')
           }
         } else if (this._mergeStatus === EMergeStatus.REQUEST) {
           // 合并请求
+          this.mergeBarItem.text = `$(sync~spin)正在创建`
+          this._mergeStatus = EMergeStatus.RUNNING
           this.startMergeRequest()
         }
       })
@@ -79,13 +87,14 @@ export default class MergeBar {
   }
   // 改变merge状态
   async changeMergeStatus() {
+    if (this._mergeStatus === EMergeStatus.RUNNING) return
     const branch = await this.getCurrentBranchStr()
     if (branch) {
       if (branch.includes(MERGE_TO)) {
-        this.mergeBarItem.text = '合并请求提交'
+        this.mergeBarItem.text = '创建CR请求'
         this._mergeStatus = EMergeStatus.REQUEST
       } else {
-        this.mergeBarItem.text = '合并代码至'
+        this.mergeBarItem.text = '开始CR流程'
         this._mergeStatus = EMergeStatus.START
       }
       this.mergeBarItem.show()
@@ -145,8 +154,7 @@ export default class MergeBar {
             await run(`git checkout -b ${branch.current}${MERGE_TO}${e.label}`, this._rootPath)
           }
         } catch (error) {
-          console.log('拉取分支', error)
-          this.mergeBarItem.text = '合并代码至'
+          this.mergeBarItem.text = '开始CR流程'
           this._mergeStatus = EMergeStatus.START
           vscode.window.showWarningMessage('请确保目标分支代码已全部提交')
           return
@@ -156,7 +164,7 @@ export default class MergeBar {
           // rebase没问题，直接合并
           this.startMergeRequest()
         } catch (error) {
-          this.mergeBarItem.text = '合并请求提交'
+          this.mergeBarItem.text = '创建CR请求'
           this._mergeStatus = EMergeStatus.REQUEST
           vscode.window.showWarningMessage('请解决冲突，并作为新的commit提交代码！')
         }
@@ -167,8 +175,6 @@ export default class MergeBar {
   }
   // 开始合并请求
   async startMergeRequest() {
-    this.mergeBarItem.text = '合并请求提交'
-    this._mergeStatus = EMergeStatus.REQUEST
     if ((await this._simpleGit.status()).isClean()) {
       // 当前分支
       const branch: BranchSummary = await this._simpleGit.branch()
@@ -189,30 +195,26 @@ export default class MergeBar {
         betterOpn(uri)
       } else {
         // 创建gw请求
-        const env = await this.getEnv()
+        const env = await this.getEnv(target)
         const uri = `${GW_URL}?buId=${
           buIdEnum[isaac?.buPrefix as number]
-        }&applicationName=${name}&env=${env}&merge_source_branch=${branch.current}&merge_target_branch=${target}`
+        }&applicationName=${name}&env=${env}&mergeSourceBranch=${branch.current}`
         betterOpn(uri)
       }
     } else {
       vscode.window.showWarningMessage('有代码没有提交')
     }
+    this.mergeBarItem.text = '创建CR请求'
+    this._mergeStatus = EMergeStatus.REQUEST
   }
 
   // 获取开发环境
-  async getEnv() {
-    try {
-      const data = await fs.readFileSync(this._rootPath + '/.git/HEAD')
-      const branch = data.toString()
-      if (branch.includes('master') || branch.includes('main')) {
-        return 2
-      } else if (branch.includes('uat')) {
-        return 1
-      } else {
-        return 0
-      }
-    } catch (error) {
+  async getEnv(target: string) {
+    if (target.includes('master')) {
+      return 2
+    } else if (target.includes('uat')) {
+      return 1
+    } else {
       return 0
     }
   }
