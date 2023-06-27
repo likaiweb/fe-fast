@@ -9,10 +9,10 @@ const betterOpn = require('better-opn')
 // merge状态
 enum EMergeStatus {
   INIT = 0, // 初始化
-  START = 1, // 开始合并
+  START = 1, // 开始CR流程
   CONTINUE = 2, // 继续合并
-  REQUEST = 3, // 合并请求
-  RUNNING = 4, // 运行中
+  REQUEST = 3, // 创建CR请求
+  RUNNING = 4, // 执行中
 }
 
 const MERGE_TO = '_merge_to_'
@@ -36,7 +36,8 @@ export default class MergeBar {
     this.init()
   }
   // 初始化
-  init() {
+  async init() {
+    if (!(await this.isYupaopao())) return
     // 添加订阅
     this._content.subscriptions.push(
       // bar点击事件
@@ -52,7 +53,7 @@ export default class MergeBar {
         } else if (this._mergeStatus === EMergeStatus.CONTINUE) {
           // 继续合并
           try {
-            this.mergeBarItem.text = `$(sync~spin)正在合并`
+            this.mergeBarItem.text = `$(sync~spin)执行中`
             this._mergeStatus = EMergeStatus.RUNNING
             await run('git rebase --continue', this._rootPath)
             this.startMergeRequest()
@@ -63,7 +64,7 @@ export default class MergeBar {
           }
         } else if (this._mergeStatus === EMergeStatus.REQUEST) {
           // 合并请求
-          this.mergeBarItem.text = `$(sync~spin)正在创建`
+          this.mergeBarItem.text = `$(sync~spin)执行中`
           this._mergeStatus = EMergeStatus.RUNNING
           this.startMergeRequest()
         }
@@ -73,17 +74,8 @@ export default class MergeBar {
     this.mergeBarItem.command = this._mergeCommandId
     this._content.subscriptions.push(this.mergeBarItem)
     this.changeMergeStatus()
-    this._content.subscriptions.push(vscode.workspace.onDidChangeConfiguration(this.onConfigurationChanged.bind(this)))
-  }
-  // 配置变更，自动刷新开启，定时获取git装填
-  onConfigurationChanged() {
-    const autoRefresh = vscode.workspace.getConfiguration('git')?.get('autorefresh')
-    if (autoRefresh) {
-      this._timer && clearInterval(this._timer)
-      this._timer = setInterval(this.changeMergeStatus.bind(this), 3000)
-    } else {
-      this._timer && clearInterval(this._timer)
-    }
+    this._timer && clearInterval(this._timer)
+    this._timer = setInterval(this.changeMergeStatus.bind(this), 3000)
   }
   // 改变merge状态
   async changeMergeStatus() {
@@ -109,38 +101,12 @@ export default class MergeBar {
       }
     }
   }
-  // 是否正在变基
-  isRebasing() {
-    const rebaseDirs = ['/.git/rebase-apply', '/.git/rebase-merge']
-    for (const dir of rebaseDirs) {
-      if (fs.existsSync(this._rootPath + dir)) {
-        return true
-      }
-    }
-    return false
-  }
-  // 获取当前分支，非分支返回空
-  async getCurrentBranchStr() {
-    try {
-      const data = await fs.readFileSync(this._rootPath + '/.git/HEAD')
-      const branch = data.toString().trim()
-      const reg = /refs\/heads\/(.+)$/
-      const match = branch.match(reg)
-      if (match) {
-        return match[1]
-      } else {
-        return ''
-      }
-    } catch (error) {
-      return ''
-    }
-  }
   // 目标分支选择
   async onSelectChange(e: vscode.QuickPickItem | undefined) {
     if (e) {
       if ((await this._simpleGit.status()).isClean()) {
         try {
-          this.mergeBarItem.text = `$(sync~spin)正在合并`
+          this.mergeBarItem.text = `$(sync~spin)执行中`
           this._mergeStatus = EMergeStatus.RUNNING
           const branch: BranchSummary = await this._simpleGit.branch()
           await run(`git checkout ${e.label}`, this._rootPath)
@@ -230,6 +196,37 @@ export default class MergeBar {
     const reg = /.*git\.yupaopao\.com\:(.*)\.git/g
     const result: RegExpExecArray | null = reg.exec(gitUrlStr)
     return result ? result[1] : ''
+  }
+  // 是否是鱼泡泡内部项目
+  async isYupaopao() {
+    const path = await this.getOriginPath()
+    return !!path
+  }
+  // 是否正在变基
+  isRebasing() {
+    const rebaseDirs = ['/.git/rebase-apply', '/.git/rebase-merge']
+    for (const dir of rebaseDirs) {
+      if (fs.existsSync(this._rootPath + dir)) {
+        return true
+      }
+    }
+    return false
+  }
+  // 获取当前分支，非分支返回空
+  async getCurrentBranchStr() {
+    try {
+      const data = await fs.readFileSync(this._rootPath + '/.git/HEAD')
+      const branch = data.toString().trim()
+      const reg = /refs\/heads\/(.+)$/
+      const match = branch.match(reg)
+      if (match) {
+        return match[1]
+      } else {
+        return ''
+      }
+    } catch (error) {
+      return ''
+    }
   }
   dispose() {
     this.mergeBarItem?.dispose()
