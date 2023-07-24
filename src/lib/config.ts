@@ -65,6 +65,7 @@ export const buIdEnum: any = {
   cube: 71,
   yuanshen: 72,
   'yrlive-home': 73,
+  'doric-web': 74,
   yepbbs: 20,
   poseidon: 35,
   'op-media': 47,
@@ -72,3 +73,5 @@ export const buIdEnum: any = {
 
 export const GIT_LAB_URL = 'https://git.yupaopao.com'
 export const GW_URL = 'https://gw.yupaopao.com/#/project/link'
+
+export const MERGE_TO = '_merge_to_'

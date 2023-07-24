@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 import { GW_URL, buIdEnum } from '../lib/config'
-import { getRootPath } from '../lib/utils'
+import { getRootPath, isYupaopao } from '../lib/utils'
 const fs = require('fs-extra')
 const betterOpn = require('better-opn')
 
@@ -17,26 +17,8 @@ export default class GwStatusBar {
     this._rootPath = getRootPath()
     this.init()
   }
-  private getGwUrl(buId: number, projectName: string, env: number) {
-    return `${GW_URL}?buId=${buId}&applicationName=${projectName}&env=${env}`
-  }
-
-  private async getEnv() {
-    try {
-      const data = await fs.readFileSync(this._rootPath + '/.git/HEAD')
-      const branch = data.toString()
-      if (branch.includes('master') || branch.includes('main')) {
-        return 2
-      } else if (branch.includes('uat')) {
-        return 1
-      } else {
-        return 0
-      }
-    } catch (error) {
-      return 0
-    }
-  }
-  init() {
+  async init() {
+    if (!(await isYupaopao())) return
     this._content.subscriptions.push(
       vscode.commands.registerCommand(this._gwCommandId, async () => {
         const pkg = fs.readJsonSync(this._rootPath + '/package.json')
@@ -47,7 +29,6 @@ export default class GwStatusBar {
         betterOpn(uri)
       })
     )
-
     this.gwStatusBarItem.text = 'gw发布'
     this.gwStatusBarItem.command = this._gwCommandId
     this._content.subscriptions.push(this.gwStatusBarItem)
@@ -67,6 +48,26 @@ export default class GwStatusBar {
       return this.gwStatusBarItem?.hide()
     }
     this.gwStatusBarItem?.show()
+  }
+  // 拼接GW链接
+  private getGwUrl(buId: number, projectName: string, env: number) {
+    return `${GW_URL}?buId=${buId}&applicationName=${projectName}&env=${env}`
+  }
+  // 获取gw环境
+  private async getEnv() {
+    try {
+      const data = await fs.readFileSync(this._rootPath + '/.git/HEAD')
+      const branch = data.toString()
+      if (branch.includes('master') || branch.includes('main')) {
+        return 2
+      } else if (branch.includes('uat')) {
+        return 1
+      } else {
+        return 0
+      }
+    } catch (error) {
+      return 0
+    }
   }
   dispose() {
     this.gwStatusBarItem?.dispose()

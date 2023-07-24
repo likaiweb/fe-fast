@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 const fs = require('fs-extra')
-import { getRootPath } from '../lib/utils'
+import { getRootPath, getOriginPath, isYupaopao } from '../lib/utils'
 import { GIT_LAB_URL } from '../lib/config'
 const betterOpn = require('better-opn')
 
@@ -18,37 +18,11 @@ export default class GitLabStatusBar {
     this.init()
   }
 
-  private async getOriginBranch() {
-    const fileData = await fs.readFileSync(this._rootPath + '/.git/HEAD')
-    const branch = fileData.toString()
-    if (branch.includes('master') || branch.includes('main')) {
-      return 'master'
-    } else if (branch.includes('uat')) {
-      return 'uat'
-    } else if (branch.includes('test')) {
-      return 'test'
-    } else {
-      return ''
-    }
-  }
-
-  private async getOriginPath() {
-    const fileData = await fs.readFileSync(this._rootPath + '/.git/config')
-    const gitConfigArr = fileData.toString().split('\n')
-    const index = gitConfigArr.indexOf('[remote "origin"]')
-    const gitUrlStr = gitConfigArr[index + 1]
-    if (!gitUrlStr.includes('git.yupaopao.com')) {
-      return ''
-    }
-    const reg = /.*git\.yupaopao\.com\:(.*)\.git/g
-    const result: RegExpExecArray | null = reg.exec(gitUrlStr)
-    return result ? result[1] : ''
-  }
-
-  init() {
+  async init() {
+    if (!(await isYupaopao())) return
     this._content.subscriptions.push(
       vscode.commands.registerCommand(this._gitLabCommandId, async () => {
-        const projectPath = await this.getOriginPath()
+        const projectPath = await getOriginPath()
         betterOpn(`${GIT_LAB_URL}/${projectPath}`)
       })
     )
@@ -61,10 +35,6 @@ export default class GitLabStatusBar {
 
   private async showStatusBar() {
     if (!fs.existsSync(this._rootPath + '/.git/config')) {
-      return this.gitLabStatusBarItem?.hide()
-    }
-    const projectPath = await this.getOriginPath()
-    if (!projectPath) {
       return this.gitLabStatusBarItem?.hide()
     }
     this.gitLabStatusBarItem?.show()

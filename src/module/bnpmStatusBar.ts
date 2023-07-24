@@ -1,5 +1,4 @@
 import * as vscode from 'vscode'
-const fs = require('fs-extra')
 import { run, getRootPath } from '../lib/utils'
 const betterOpn = require('better-opn')
 
@@ -54,7 +53,6 @@ export default class BnpmStatusBar {
         }
       })
     )
-
     this.showStatusBar()
   }
 
